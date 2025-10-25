@@ -53,16 +53,18 @@ const average = (arr) =>
   arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0);
 
 export default function App() {
+  const [query, setQuery] = useState("");
   const [watched, setWatched] = useState([]);
   const [movies, setMovies] = useState([]);
   const [isLoading, setIsloading] = useState(false);
   const [error, setError] = useState("");
-  const query = "pirates";
+  const tempQuery = "pirates";
 
   useEffect(() => {
     async function fetchmovies() {
       try {
         setIsloading(true);
+        setError("");
         const res = await fetch(
           `http://www.omdbapi.com/?apikey=${KEY}&s=${query}`
         );
@@ -74,16 +76,24 @@ export default function App() {
       } catch (err) {
         console.error(err.message);
         setError(err.message);
+      } finally {
+        setIsloading(false);
       }
     }
 
+    if (query.length < 3) {
+      setMovies([]);
+      setError("");
+      return;
+    }
+
     fetchmovies();
-  }, []);
+  }, [query]);
 
   return (
     <>
       <NavBar>
-        <Search />
+        <Search query={query} setQuery={setQuery} />
         <Results movies={movies} />
       </NavBar>
       <Main>
@@ -113,7 +123,7 @@ function ErrorMessage({ message }) {
   );
 }
 
-function NavBar({ movies, children }) {
+function NavBar({ children }) {
   return (
     <div>
       <nav className="nav-bar">
@@ -135,8 +145,7 @@ function Logo() {
   );
 }
 
-function Search() {
-  const [query, setQuery] = useState("");
+function Search({ query, setQuery }) {
   return (
     <div>
       <input
