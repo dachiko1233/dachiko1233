@@ -53,7 +53,7 @@ const average = (arr) =>
   arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0);
 
 export default function App() {
-  const [query, setQuery] = useState("test");
+  const [query, setQuery] = useState([]);
   const [watched, setWatched] = useState([]);
   const [movies, setMovies] = useState([]);
   const [isLoading, setIsloading] = useState(false);
@@ -77,12 +77,14 @@ export default function App() {
   }
 
   useEffect(() => {
+    const contriller = new AbortController();
     async function fetchmovies() {
       try {
         setIsloading(true);
         setError("");
         const res = await fetch(
-          `http://www.omdbapi.com/?apikey=${KEY}&s=${query}`
+          `http://www.omdbapi.com/?apikey=${KEY}&s=${query}`,
+          { signal: contriller.signal }
         );
         if (!res.ok) throw new Error("Something went wrong fetching movies");
         const data = await res.json();
@@ -104,6 +106,10 @@ export default function App() {
     }
 
     fetchmovies();
+
+    return () => {
+      contriller.abort();
+    };
   }, [query]);
 
   return (
@@ -319,6 +325,15 @@ function MoviesDetals({ selectedId, onCloseMovie, onAddWatch, watched }) {
     onAddWatch(newWatchedMovie);
     onCloseMovie();
   }
+
+  useEffect(() => {
+    if (!title) return;
+    document.title = `Movie | ${title}`;
+
+    return () => {
+      document.title = `usePopcorn`;
+    };
+  }, [title]);
 
   return (
     <div className="details">
