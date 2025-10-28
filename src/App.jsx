@@ -53,7 +53,7 @@ const average = (arr) =>
   arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0);
 
 export default function App() {
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState("test");
   const [watched, setWatched] = useState([]);
   const [movies, setMovies] = useState([]);
   const [isLoading, setIsloading] = useState(false);
@@ -66,6 +66,10 @@ export default function App() {
 
   function handleCloseMode() {
     setSelectedId(null);
+  }
+
+  function handleAddWatched(m) {
+    setWatched((watched) => [...watched, m]);
   }
 
   useEffect(() => {
@@ -117,6 +121,8 @@ export default function App() {
             <MoviesDetals
               selectedId={selectedId}
               onCloseMovie={handleCloseMode}
+              onAddWatch={handleAddWatched}
+              watched={watched}
             />
           ) : (
             <>
@@ -251,9 +257,12 @@ function Movie({ movie, onSelectMovie }) {
   );
 }
 
-function MoviesDetals({ selectedId, onCloseMovie }) {
+function MoviesDetals({ selectedId, onCloseMovie, onAddWatch, watched }) {
   const [movie, setMovie] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+  const [userRating, setUserRating] = useState(0);
+
+  const isWatched = watched.map((m) => m.imdbID).includes(selectedId);
 
   const {
     Title: title,
@@ -267,8 +276,6 @@ function MoviesDetals({ selectedId, onCloseMovie }) {
     Director: director,
     Genre: genre,
   } = movie;
-
-  console.log(title, year, actors);
 
   useEffect(() => {
     async function getMoviesDetals() {
@@ -287,6 +294,22 @@ function MoviesDetals({ selectedId, onCloseMovie }) {
     }
     getMoviesDetals();
   }, [selectedId]);
+
+  function handleAdd() {
+    const newWatchedMovie = {
+      indbID: selectedId,
+      title,
+      year,
+      poster,
+      imdbRating: Number(imdbRating),
+      runtime: Number(runtime.split(" ").at(0)),
+      userRating,
+    };
+
+    onAddWatch(newWatchedMovie);
+    onCloseMovie;
+  }
+
   return (
     <div className="details">
       {isLoading ? (
@@ -310,9 +333,25 @@ function MoviesDetals({ selectedId, onCloseMovie }) {
               </p>
             </div>
           </header>
+
           <section>
             <div className="rating">
-              <StartRating maxRating={10} size={24} />
+              {!isWatched ? (
+                <>
+                  <StartRating
+                    maxRating={10}
+                    size={24}
+                    onSetRating={setUserRating}
+                  />
+                  {userRating > 0 && (
+                    <button className="btn-add" onClick={handleAdd}>
+                      + Add to list
+                    </button>
+                  )}
+                </>
+              ) : (
+                <p>You rated with movie</p>
+              )}
             </div>
 
             <p>
