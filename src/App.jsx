@@ -47,7 +47,7 @@ const tempWatchedData = [
   },
 ];
 
-const KEY = "f84fc31d";
+const KEY = "bba94175";
 
 const average = (arr) =>
   arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0);
@@ -92,8 +92,10 @@ export default function App() {
         setMovies(data.Search);
         setIsloading(false);
       } catch (err) {
-        console.error(err.message);
-        setError(err.message);
+        if (err.name !== "AbortError") {
+          console.error(err.message);
+          setError(err.message);
+        }
       } finally {
         setIsloading(false);
       }
