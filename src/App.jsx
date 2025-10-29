@@ -325,7 +325,6 @@ function MoviesDetals({ selectedId, onCloseMovie, onAddWatch, watched }) {
     };
 
     onAddWatch(newWatchedMovie);
-    onCloseMovie();
   }
 
   useEffect(() => {
@@ -394,6 +393,8 @@ function MoviesDetals({ selectedId, onCloseMovie, onAddWatch, watched }) {
     </div>
   );
 }
+
+function Gio() {}
 
 function WatchedSummery({ watched }) {
   const avgImdbRating = average(watched.map((movie) => movie.imdbRating));
