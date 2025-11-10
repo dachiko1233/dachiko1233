@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import StartRating from "./StartRating";
 import { useMovies } from "./useMovis";
 import { useLocalStorageState } from "./useLocalStorage";
+import { useKey } from "./useKey";
 
 const KEY = "bba94175";
 
@@ -109,18 +110,11 @@ function Logo() {
 
 function Search({ query, setQuery }) {
   const inputEL = useRef(null);
-  useEffect(() => {
-    function callback(e) {
-      if (document.activeElement === inputEL.current) return;
-      if (e.code === "Enter") {
-        inputEL.current.focus();
-        setQuery("");
-      }
-    }
-
-    document.addEventListener("keydown", callback);
-    return () => document.addEventListener("keydown", callback);
-  }, [setQuery]);
+  useKey("Enter", function () {
+    if (document.activeElement === inputEL.current) return;
+    inputEL.current.focus();
+    setQuery("");
+  });
   return (
     <div>
       <input
@@ -260,22 +254,14 @@ function MoviesDetals({ selectedId, onCloseMovie, onAddWatch, watched }) {
       imdbRating: Number(imdbRating),
       runtime: Number(runtime.split(" ").at(0)),
       userRating,
+      countRatingDecisions: courRef.current,
     };
 
     onAddWatch(newWatchedMovie);
     onCloseMovie();
   }
 
-  useEffect(() => {
-    function callBack(e) {
-      if (e.code === "Escape") {
-        onCloseMovie();
-      }
-    }
-
-    document.addEventListener("keydown", callBack);
-    return () => document.addEventListener("keydown", callBack);
-  });
+  useKey("Escape", onCloseMovie);
 
   useEffect(() => {
     if (!title) return;
