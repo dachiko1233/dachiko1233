@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import StartRating from "./StartRating";
 const tempMovieData = [
   {
@@ -54,11 +54,16 @@ const average = (arr) =>
 
 export default function App() {
   const [query, setQuery] = useState([]);
-  const [watched, setWatched] = useState([]);
+  // const [watched, setWatched] = useState([]);
   const [movies, setMovies] = useState([]);
   const [isLoading, setIsloading] = useState(false);
   const [error, setError] = useState("");
   const [selectedId, setSelectedId] = useState(null);
+
+  const [watched, setWatched] = useState(() => {
+    const sortedValue = localStorage.getItem("watched");
+    return sortedValue ? JSON.parse(sortedValue) : [];
+  });
 
   function handleSelectMovie(id) {
     setSelectedId((selectedId) => (id === selectedId ? null : id));
@@ -75,6 +80,10 @@ export default function App() {
   function handleDeleteWatch(id) {
     setWatched((watch) => watch.filter((movie) => movie.imdbID !== id));
   }
+
+  useEffect(() => {
+    localStorage.setItem("watched", JSON.stringify(watched));
+  }, [watched]);
 
   useEffect(() => {
     const contriller = new AbortController();
@@ -186,6 +195,19 @@ function Logo() {
 }
 
 function Search({ query, setQuery }) {
+  const inputEL = useRef(null);
+  useEffect(() => {
+    function callback(e) {
+      if (document.activeElement === inputEL.current) return;
+      if (e.code === "Enter") {
+        inputEL.current.focus();
+        setQuery("");
+      }
+    }
+
+    document.addEventListener("keydown", callback);
+    return () => document.addEventListener("keydown", callback);
+  }, [setQuery]);
   return (
     <div>
       <input
@@ -194,6 +216,7 @@ function Search({ query, setQuery }) {
         placeholder="Search movies..."
         value={query}
         onChange={(e) => setQuery(e.target.value)}
+        ref={inputEL}
       />
     </div>
   );
@@ -295,6 +318,8 @@ function MoviesDetals({ selectedId, onCloseMovie, onAddWatch, watched }) {
     Genre: genre,
   } = movie;
 
+  const isTop = imdbRating > 8;
+
   useEffect(() => {
     async function getMoviesDetals() {
       try {
@@ -327,6 +352,17 @@ function MoviesDetals({ selectedId, onCloseMovie, onAddWatch, watched }) {
     onAddWatch(newWatchedMovie);
     onCloseMovie();
   }
+
+  useEffect(() => {
+    function callBack(e) {
+      if (e.code === "Escape") {
+        onCloseMovie();
+      }
+    }
+
+    document.addEventListener("keydown", callBack);
+    return () => document.addEventListener("keydown", callBack);
+  });
 
   useEffect(() => {
     if (!title) return;
