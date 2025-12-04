@@ -212,6 +212,8 @@ function MoviesDetals({ selectedId, onCloseMovie, onAddWatch, watched }) {
     (movie) => movie.imdbID === selectedId
   )?.userRating;
 
+  const countRef = useRef(0);
+
   const {
     Title: title,
     Year: year,
@@ -226,6 +228,7 @@ function MoviesDetals({ selectedId, onCloseMovie, onAddWatch, watched }) {
   } = movie;
 
   const isTop = imdbRating > 8;
+  console.log(isTop);
 
   useEffect(() => {
     async function getMoviesDetals() {
@@ -254,7 +257,7 @@ function MoviesDetals({ selectedId, onCloseMovie, onAddWatch, watched }) {
       imdbRating: Number(imdbRating),
       runtime: Number(runtime.split(" ").at(0)),
       userRating,
-      countRatingDecisions: courRef.current,
+      countRatingDecisions: countRef.current,
     };
 
     onAddWatch(newWatchedMovie);
